@@ -46,7 +46,7 @@ def main():
 
     log.info(f"📊 Gold SNRT: {df_gold.count()} lignes")
     df_gold.show(5, truncate=False)
-    df_gold.write.jdbc(url=PG_URL, table="gold_snrt_content_performance", mode="append", properties=PG_PROPS)
+    df_gold.write.jdbc(url=PG_URL, table="gold_snrt_content_performance", mode="overwrite", properties=PG_PROPS)
     log.info("✅ Gold SNRT écrit dans PostgreSQL !")
     spark.stop()
 
