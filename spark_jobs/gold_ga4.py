@@ -47,7 +47,7 @@ def main():
         .withColumnRenamed("device_category_fr", "device_category")
     )
     log.info(f"📊 Gold GA4: {df_gold.count()} lignes")
-    df_gold.write.jdbc(url=PG_URL, table="gold_ga4_daily_stats", mode="overwrite", properties=PG_PROPS)
+    df_gold.write.jdbc(url=PG_URL, table="gold_ga4_daily_stats", mode="append", properties=PG_PROPS)
     log.info("✅ Gold GA4 écrit dans PostgreSQL !")
     spark.stop()
 
