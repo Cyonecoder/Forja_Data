@@ -55,3 +55,4 @@ check_pipeline.sh
 # JARs lourds (non versionnés)
 spark_docker/jars/
 spark_jobs/jars/
+*.bak
