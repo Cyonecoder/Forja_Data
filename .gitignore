@@ -56,3 +56,5 @@ check_pipeline.sh
 spark_docker/jars/
 spark_jobs/jars/
 *.bak
+logs_gold_*.txt
+*.backup_*

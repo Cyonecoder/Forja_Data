@@ -1,3 +1,4 @@
+from pyspark.sql import functions as F
 import os, logging
 import psycopg2
 from pyspark.sql import SparkSession
@@ -59,16 +60,18 @@ def upsert_to_postgres(df):
                 cur.execute(f"""
                     INSERT INTO {TARGET_TABLE}
                         (content_title, content_type, report_month,
-                         total_views, avg_duration_min, total_users,
+                         total_views, avg_duration_min, watch_time_total, completion_rate, total_users,
                          top_country, top_device, updated_at)
                     SELECT content_title, content_type, report_month,
-                           total_views, avg_duration_min, total_users,
+                           total_views, avg_duration_min, watch_time_total, completion_rate, total_users,
                            top_country, top_device, NOW()
                     FROM {TMP_TABLE}
                     ON CONFLICT (content_title, content_type, report_month)
                     DO UPDATE SET
                         total_views      = EXCLUDED.total_views,
                         avg_duration_min = EXCLUDED.avg_duration_min,
+                        watch_time_total = EXCLUDED.watch_time_total,
+                        completion_rate = EXCLUDED.completion_rate,
                         total_users      = EXCLUDED.total_users,
                         top_country      = EXCLUDED.top_country,
                         top_device       = EXCLUDED.top_device,
@@ -95,11 +98,19 @@ def main():
             log.warning("⚠️  Silver SNRT vide — job annulé sans écriture")
             return
         df_gold = (df
-            .withColumn("report_month", substring(col("watched_at"), 1, 7))
+            .withColumn("content_title",
+                F.when(col("content_title").startswith("{"),
+                    F.regexp_extract(col("content_title"), '"fr"\s*:\s*"([^"]+)"', 1)
+                ).otherwise(col("content_title")))
+            .filter(col("content_title").isNotNull())
+            .filter(col("content_title") != "")
+            .withColumn("report_month", substring(col("watch_date"), 1, 7))
             .groupBy("content_title", "content_type", "report_month")
             .agg(
-                count("w_id").alias("total_views"),
-                spark_round(avg(col("watch_duration").cast("float")), 2).alias("avg_duration_min"),
+                count("id").alias("total_views"),
+                spark_round(avg(col("duration_min").cast("float")), 2).alias("avg_duration_min"),
+                spark_round(F.sum(col("duration_min").cast("float")), 2).alias("watch_time_total"),
+                spark_round(avg(col("is_complete_view").cast("float")), 2).alias("completion_rate"),
                 count("user_id").alias("total_users"),
                 first("country").alias("top_country"),
                 first("os").alias("top_device")

@@ -1,3 +1,4 @@
+from pyspark.sql import functions as F
 import os, logging
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import (
@@ -32,15 +33,41 @@ def create_spark():
 
 def read_bronze(spark):
     log.info(f"📖 Lecture Bronze: {BRONZE_PATH}")
-    df = spark.read.parquet(BRONZE_PATH)
+    from pyspark.sql.types import LongType, DoubleType as DT, StringType
+    long_cols = ["userEngagementDuration","engagedSessions","scrolledUsers","eventCount","sessions","newUsers"]
+    double_cols = ["screenPageViews","activeUsers","totalUsers","bounceRate","averageSessionDuration"]
+    from datetime import date, timedelta
+    yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+    y, m, d = yesterday.split("-")
+    BRONZE_PATH_J1 = f"{BRONZE_PATH}year={y}/month={int(m)}/day={int(d)}/"
+    try:
+        df = spark.read.option("mergeSchema","false").parquet(BRONZE_PATH_J1)
+        log.info(f"📅 Lecture J-1 uniquement: {yesterday}")
+    except Exception:
+        df = spark.read.option("mergeSchema","false").parquet(BRONZE_PATH)
+        log.info("📅 Fallback: lecture complète Bronze")
+    for c in long_cols:
+        if c in df.columns: df = df.withColumn(c, df[c].cast(LongType()))
+    for c in double_cols:
+        if c in df.columns: df = df.withColumn(c, df[c].cast(DT()))
     log.info(f"   → {df.count()} lignes brutes")
     return df
 
 def transform(df):
     log.info("🧹 Nettoyage + enrichissement...")
+    optional_cols = [
+        "deviceCategory", "eventName", "sessionSource", "pagePath",
+        "screenPageViews", "activeUsers", "sessions", "newUsers",
+        "userEngagementDuration", "engagedSessions", "scrolledUsers",
+        "eventCount", "bounceRate", "sessionMedium", "sessionCampaign",
+        "averageSessionDuration", "totalUsers", "avg_session_min",
+        "bounce_rate_pct", "is_new_user", "device_category_fr"
+    ]
+    for _col in optional_cols:
+        if _col not in df.columns:
+            df = df.withColumn(_col, F.lit(None))
     df_clean = (df
         .filter(col("report_type").isNotNull())
-        .filter(col("date").isNotNull())
         .withColumn("report_type",    trim(lower(col("report_type"))))
         .withColumn("deviceCategory", trim(lower(col("deviceCategory"))))
         .withColumn("eventName",      trim(lower(col("eventName"))))
@@ -72,11 +99,11 @@ def transform(df):
         .withColumn("is_new_user",    when(col("newUsers") > 0, True).otherwise(False))
         .withColumn("bounce_rate_pct", spark_round(col("bounceRate") * 100, 2))
         .withColumn("avg_session_min", spark_round(col("averageSessionDuration") / 60, 2))
-        .withColumn("ga4_date",        to_date(col("date"), "yyyyMMdd"))
+        .withColumn("ga4_date",        to_date(col("ga4_date"), "yyyyMMdd"))
         .withColumn("transformed_at",  current_timestamp())
     )
 
-    dedup_keys = ["report_type", "date", "pagePath", "sessionSource", "deviceCategory", "eventName"]
+    dedup_keys = ["report_type", "ga4_date", "pagePath", "sessionSource", "deviceCategory", "eventName"]
     df_dedup = df_clean.dropDuplicates(dedup_keys)
     before = df_clean.count()
     after  = df_dedup.count()
@@ -85,9 +112,15 @@ def transform(df):
 
 def write_silver(df):
     log.info(f"💾 Écriture Silver: {SILVER_PATH}")
+    # Cast colonnes VOID en StringType pour Parquet
+    from pyspark.sql.types import NullType, StringType
+    for field in df.schema.fields:
+        if isinstance(field.dataType, NullType):
+            df = df.withColumn(field.name, df[field.name].cast(StringType()))
+    log.info("🔧 Colonnes VOID castées en String")
     (df.write
         .mode("overwrite")
-        .partitionBy("report_type", "date")
+        .partitionBy("report_type", "ga4_date")
         .parquet(SILVER_PATH))
     log.info("✅ Silver écrit")
 
@@ -98,7 +131,7 @@ def validate(spark):
     log.info("📋 Par report_type:")
     df.groupBy("report_type").count().orderBy("count", ascending=False).show(truncate=False)
     log.info("📅 Dates disponibles:")
-    df.select("date").distinct().orderBy("date").show(40, truncate=False)
+    df.select("ga4_date").distinct().orderBy("ga4_date").show(40, truncate=False)
     log.info("📱 Appareils:")
     df.groupBy("device_category_fr").sum("activeUsers").orderBy("sum(activeUsers)", ascending=False).show()
 

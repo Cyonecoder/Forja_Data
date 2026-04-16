@@ -94,6 +94,10 @@ def main():
         except Exception as e:
             log.error(f"❌ Impossible de lire Silver GA4: {e}")
             raise
+        # Extraire year/month/day depuis ga4_date si colonnes absentes
+        from pyspark.sql.functions import year as yr, month as mo, dayofmonth as dom, to_date
+        if 'year' not in df.columns:
+            df = df.withColumn('year',  yr(to_date('ga4_date')))                    .withColumn('month', mo(to_date('ga4_date')))                    .withColumn('day',   dom(to_date('ga4_date')))
         row_count = df.count()
         log.info(f"✅ Silver chargé: {row_count} lignes | Colonnes: {df.columns}")
         if row_count == 0:
