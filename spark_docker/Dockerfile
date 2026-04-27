@@ -15,7 +15,7 @@ RUN curl -fsSL https://repo.huaweicloud.com/apache/spark/spark-${SPARK_VERSION}/
     && mv /opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} ${SPARK_HOME} \
     && mkdir -p ${SPARK_HOME}/logs
 
-RUN pip install --no-cache-dir pyspark==${SPARK_VERSION} kafka-python boto3
+RUN pip install --no-cache-dir pyspark==${SPARK_VERSION} kafka-python boto3 psycopg2-binary
 
 COPY start.sh /start.sh
 COPY jars/*.jar /opt/spark/jars/

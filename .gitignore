@@ -55,3 +55,8 @@ check_pipeline.sh
 # JARs lourds (non versionnés)
 spark_docker/jars/
 spark_jobs/jars/
+*.bak
+logs_gold_*.txt
+*.backup_*
+airflow/airflow.cfg
+airflow/logs/

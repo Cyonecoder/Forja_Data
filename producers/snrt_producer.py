@@ -14,7 +14,7 @@ def serialize(obj):
     raise TypeError(f"Type {type(obj)} not serializable")
 
 producer = KafkaProducer(
-    bootstrap_servers='forja_kafka:9092',
+    bootstrap_servers="localhost:9092",
     value_serializer=lambda v: json.dumps(v, default=serialize).encode('utf-8'),
     key_serializer=lambda k: str(k).encode('utf-8'),
     linger_ms=10,

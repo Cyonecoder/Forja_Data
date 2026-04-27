@@ -4,16 +4,16 @@ from io import BytesIO
 from botocore.client import Config
 
 DB_CONFIG = {
-    "host": os.getenv("SNRT_DB_HOST", "localhost"),
-    "port": os.getenv("SNRT_DB_PORT", "5432"),
+    "host": os.getenv("POSTGRES_HOST", "169.255.179.24"),
+    "port": os.getenv("POSTGRES_PORT", "5432"),
     "dbname": "snrt_stats",
-    "user": os.getenv("SNRT_DB_USER", "snrt_readonly"),
-    "password": os.getenv("SNRT_DB_PASSWORD", ""),
+    "user": os.getenv("POSTGRES_USER", "snrt_readonly"),
+    "password": os.getenv("POSTGRES_PASSWORD", "6AOd3Dm2"),
 }
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://localhost:9000")
 s3 = boto3.client("s3", endpoint_url=MINIO_ENDPOINT,
     aws_access_key_id=os.getenv("MINIO_ACCESS_KEY","minioadmin"),
-    aws_secret_access_key=os.getenv("MINIO_SECRET_KEY","minioadmin"),
+    aws_secret_access_key=os.getenv("MINIO_SECRET_KEY","minioadmin123"),
     config=Config(signature_version="s3v4"))
 
 TABLES = ["watchings", "contents", "users"]  # adapte selon tes tables
@@ -41,13 +41,14 @@ def ingest_table(table, date_str):
         print(f"  ⚠️  {table}: no data for {date_str}")
         return
     buf = BytesIO()
+    df = df.drop(columns=[c for c in df.columns if df[c].apply(lambda x: isinstance(x, dict) and len(x) == 0).all()], errors="ignore")
     df.to_parquet(buf, index=False)
     buf.seek(0)
-    key = f"snrt_stats/{table}/{date_str}/data.parquet"
-    s3.put_object(Bucket="bronze", Key=key, Body=buf.getvalue())
+    key = f"bronze/snrt/{table}/year={date_str.split('-')[0]}/month={str(int(date_str.split('-')[1]))}/day={str(int(date_str.split('-')[2]))}/data.parquet"
+    s3.put_object(Bucket="forja-datalake", Key=key, Body=buf.getvalue())
     print(f"  ✅ {table}: {len(df)} rows → {key}")
 
-target_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+import sys as _sys; target_date = _sys.argv[_sys.argv.index("--date")+1] if "--date" in _sys.argv else (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 print(f"🚀 SNRT ingestion for: {target_date}")
 
 for table in TABLES:

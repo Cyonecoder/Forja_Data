@@ -15,6 +15,7 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: forja_kafka
+    restart: unless-stopped
     depends_on:
       - zookeeper
     ports:
@@ -49,6 +50,7 @@ services:
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: forja_kafka_ui
+    restart: unless-stopped
     depends_on:
       - kafka
       - schema-registry
@@ -97,6 +99,14 @@ services:
     environment:
       SPARK_MODE: master
       SPARK_MASTER_HOST: spark-master
+      MINIO_ENDPOINT: http://forja_minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin123
+      POSTGRES_HOST: forja_postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: snrt_stats
+      POSTGRES_USER: snrt_readonly
+      POSTGRES_PASSWORD: 6AOd3Dm2
     ports:
       - "8080:8080"
       - "7077:7077"
