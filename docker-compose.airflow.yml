@@ -1,0 +1,49 @@
+services:
+  airflow-webserver:
+    image: apache/airflow:2.9.3
+    container_name: forja_airflow_webserver
+    restart: unless-stopped
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+      - AIRFLOW__WEBSERVER__SECRET_KEY=forja-secret-key
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+    user: "50000:0"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./scripts:/opt/forja_pipeline/scripts
+      - ./sql:/opt/forja_pipeline/sql
+    ports:
+      - "8088:8080"
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow users create --username admin --password admin --firstname Leila --lastname Bou --role Admin --email admin@example.com || true &&
+        airflow webserver
+      "
+
+  airflow-scheduler:
+    image: apache/airflow:2.9.3
+    container_name: forja_airflow_scheduler
+    restart: unless-stopped
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
+    user: "50000:0"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./scripts:/opt/forja_pipeline/scripts
+      - ./sql:/opt/forja_pipeline/sql
+    depends_on:
+      - airflow-webserver
+    command: >
+      bash -c "
+        airflow db migrate &&
+        airflow scheduler
+      "
