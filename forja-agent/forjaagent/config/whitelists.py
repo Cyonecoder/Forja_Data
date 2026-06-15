@@ -1,0 +1,16 @@
+FORJA_CONTAINER_WHITELIST = [
+    "forjazookeeper",
+    "forjakafka",
+    "forjaschemaregistry",
+    "forjakafkaui",
+    "forjapostgres",
+    "forjaminio",
+    "forjasparkmaster",
+    "forjasparkworker",
+    "forjasparkworkersilver",
+    "forjabronzeconsumer",
+    "ga4-producer",
+    "forjaairflowwebserver",
+    "forjaairflowscheduler",
+    "forjagrafana",
+]
