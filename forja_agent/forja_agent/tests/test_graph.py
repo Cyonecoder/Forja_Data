@@ -11,6 +11,15 @@ from graph.builder import build_graph
 from schemas.state import AgentState
 
 
+
+
+class ToolBindableFakeMessagesListChatModel(FakeMessagesListChatModel):
+    """Fake chat model for tests that supports bind_tools()."""
+
+    def bind_tools(self, tools, **kwargs):
+        self.bound_tools = tools
+        return self
+
 def test_graph_basic_flow():
     """
     Test que le graph fonctionne sans vrai LLM.
@@ -26,8 +35,7 @@ def test_graph_basic_flow():
     # On patche le modèle du supervisor pour utiliser le fake
     import graph.nodes as nodes
     original_fn = nodes.get_supervisor_model
-    nodes.SUPERVISOR_MODEL = fake_model.bind_tools([])
-
+    nodes.SUPERVISOR_MODEL = fake_model
     try:
         graph = build_graph()
         state = {
