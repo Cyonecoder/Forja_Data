@@ -31,8 +31,4 @@ dev = [
 [tool.setuptools.packages.find]
 include = ["forja_agent*"]
 
-[tool.pytest.ini_options]
-asyncio_mode = "auto"
-testpaths = ["tests"]
-pythonpath = ["."]
-addopts = "-v"
+# Pytest is configured in pytest.ini (single source of truth).

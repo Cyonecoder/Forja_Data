@@ -21,5 +21,5 @@ uvicorn app:app --reload
 ```bash
 curl -X POST http://127.0.0.1:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"message":"Is the pipeline healthy?","userid":"leila","threadid":"t1"}'
+  -d '{"message":"Is the pipeline healthy?","user_id":"leila","thread_id":"t1"}'
 ```
