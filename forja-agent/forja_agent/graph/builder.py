@@ -1,15 +1,15 @@
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 
-from forjaagent.schemas.state import AgentState
-from forjaagent.graph.nodes import (
+from forja_agent.schemas.state import AgentState
+from forja_agent.graph.nodes import (
     inputguardrail_fn,
     outputguardrail_fn,
     supervisor_fn,
     toolaudit_fn,
     toolgate_fn,
 )
-from forjaagent.tools.pipeline import getpipelinestatus
+from forja_agent.tools.pipeline import getpipelinestatus
 
 
 tools = [getpipelinestatus]
