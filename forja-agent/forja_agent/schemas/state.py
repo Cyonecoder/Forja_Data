@@ -41,8 +41,8 @@ class GuardrailFinding(TypedDict):
 
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
-    userid: str
-    threadid: str
+    user_id: str
+    thread_id: str
     pendingapproval: ApprovalReq | None
     approvaldecision: ApprovalDec | None
     refusal: str | None
