@@ -6,7 +6,7 @@ Dev utilise Ollama local, Prod utilise vLLM.
 """
 
 from langchain_openai import ChatOpenAI
-from config.settings import settings
+from forja_agent.config.settings import settings
 
 
 def create_supervisor_model() -> ChatOpenAI:

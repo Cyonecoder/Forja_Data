@@ -34,6 +34,7 @@ __pycache__/
 *.pyo
 .venv/
 venv/
+*.egg-info/
 
 # ========================
 # JARS (fichiers Java lourds)

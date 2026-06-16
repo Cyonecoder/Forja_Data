@@ -17,9 +17,9 @@ def supervisor_fn(state):
                     content="",
                     tool_calls=[
                         {
-                            "name": "getpipelinestatus",
+                            "name": "get_pipeline_status",
                             "args": {"sections": ["containers", "kafka", "postgres"]},
-                            "id": "call_getpipelinestatus_1",
+                            "id": "call_get_pipeline_status_1",
                             "type": "tool_call",
                         }
                     ],

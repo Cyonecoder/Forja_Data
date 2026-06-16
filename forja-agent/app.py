@@ -17,8 +17,8 @@ def health():
 def chat(payload: ChatRequest):
     state = {
         "messages": [HumanMessage(content=payload.message)],
-        "user_id": payload.userid,
-        "thread_id": payload.threadid,
+        "user_id": payload.user_id,
+        "thread_id": payload.thread_id,
         "pendingapproval": None,
         "approvaldecision": None,
         "refusal": None,
@@ -33,7 +33,7 @@ def chat(payload: ChatRequest):
     answer = getattr(last_message, "content", str(last_message))
 
     return ChatResponse(
-        threadid=payload.threadid,
+        thread_id=payload.thread_id,
         answer=answer if answer else "Tool executed successfully.",
         pendingapproval=result.get("pendingapproval"),
     )

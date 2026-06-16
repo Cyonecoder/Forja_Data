@@ -13,6 +13,7 @@ dependencies = [
     "uvicorn[standard]>=0.30.0",
     "langgraph>=1.2.0",
     "langchain-core>=0.3.0",
+    "langchain-openai>=0.2.0",
     "pydantic>=2.9.0",
     "pydantic-settings>=2.5.0",
     "python-dotenv>=1.0.0",
@@ -27,10 +28,11 @@ dev = [
     "mypy>=1.11",
 ]
 
-[tool.setuptools]
-packages = ["llm", "graph", "config", "prompts", "schemas"]
+[tool.setuptools.packages.find]
+include = ["forja_agent*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-v"
