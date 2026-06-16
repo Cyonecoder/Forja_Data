@@ -2,23 +2,25 @@
 Tests déterministes du graph Forja Agent.
 Utilise FakeListChatModel pour éviter de dépendre d'un vrai LLM.
 """
-from typing import List, Any, Optional
+from typing import List, Any
 import pytest
+from pydantic import Field
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_core.language_models.fake_chat_models import FakeMessagesListChatModel
-from graph.builder import build_graph
-from schemas.state import AgentState
+from forja_agent.graph.builder import build_graph
+from forja_agent.schemas.state import AgentState
 
 
 class ToolBindableFakeMessagesListChatModel(FakeMessagesListChatModel):
     """Fake chat model for tests that supports bind_tools()."""
-    
-    bound_tools: List[Any] = []  # ← déclarer le champ Pydantic !
+
+    bound_tools: List[Any] = Field(default_factory=list)
 
     def bind_tools(self, tools, **kwargs):
         self.bound_tools = tools
         return self
+
 
 def test_graph_basic_flow():
     """
@@ -33,8 +35,7 @@ def test_graph_basic_flow():
     )
 
     # On patche le modèle du supervisor pour utiliser le fake
-    import graph.nodes as nodes
-    original_fn = nodes.get_supervisor_model
+    import forja_agent.graph.nodes as nodes
     nodes.SUPERVISOR_MODEL = fake_model
 
     try:
@@ -82,7 +83,7 @@ def test_graph_with_tool_call():
         ]
     )
 
-    import graph.nodes as nodes
+    import forja_agent.graph.nodes as nodes
     nodes.SUPERVISOR_MODEL = fake_model.bind_tools(nodes.all_tools)
 
     try:
@@ -114,7 +115,7 @@ def test_routes():
     """
     Test les routes du graph (conditional edges).
     """
-    from graph.builder import (
+    from forja_agent.graph.builder import (
         route_after_inputguardrail,
         route_after_supervisor,
         route_after_toolgate,

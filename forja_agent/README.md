@@ -6,7 +6,7 @@ Initial skeleton for the SNRT Forja Agent based on the design documentation.
 - FastAPI API
 - LangGraph minimal graph
 - AgentState typed schema
-- Initial READ tool: `getpipelinestatus`
+- Initial READ tool: `get_pipeline_status`
 - Dev compose file
 
 ## Run

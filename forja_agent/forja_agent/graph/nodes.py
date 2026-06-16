@@ -4,9 +4,9 @@ Graph nodes for the Forja Agent LangGraph state machine.
 
 from langchain_core.messages import AIMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
-from llm.client import create_supervisor_model
-from prompts.system_prompt import SYSTEM_PROMPT
-from tools.pipeline import get_pipeline_status
+from forja_agent.llm.client import create_supervisor_model
+from forja_agent.prompts.system_prompt import SYSTEM_PROMPT
+from forja_agent.tools.pipeline import get_pipeline_status
 
 # Le modèle est créé une fois et bindé avec les outils 
 SUPERVISOR_MODEL = None
