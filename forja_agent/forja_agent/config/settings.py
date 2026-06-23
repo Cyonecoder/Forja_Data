@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     # ---- LLM (LOCAL ONLY: Ollama/vLLM OpenAI-compatible endpoints) ----
     # api_key is a dummy value required only by the OpenAI-compatible client
-    # interface. No cloud API (api.openai.com) is ever used.
+    # interface. No cloud API is ever used.
     supervisor_llm_url: str = "http://localhost:11434/v1"
     supervisor_llm_model: str = "qwen3:14b"
     supervisor_llm_api_key: str = "ollama"
@@ -54,3 +54,7 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    return settings
