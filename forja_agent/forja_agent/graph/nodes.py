@@ -82,17 +82,17 @@ def toolaudit_fn(state):
             tool_args = tool_calls[0].get("args", {})
 
     entry = {
-        "toolname": tool_name,
-        "toolargs": tool_args,
-        "risktier": "READ",
+        "tool_name": tool_name,
+        "tool_args": tool_args,
+        "risk_tier": "READ",
         "status": "success",
-        "durations": 0.0,
-        "approvedby": None,
-        "approvallatencys": None,
-        "stdoutexcerpt": str(content)[:2000],
-        "errormessage": None,
+        "duration_s": 0.0,
+        "approved_by": None,
+        "approval_latency_s": None,
+        "stdout_excerpt": str(content)[:2000],
+        "error_message": None,
     }
-    return {"toolcallsaudit": state.get("toolcallsaudit", []) + [entry]}
+    return {"tool_calls_audit": state.get("tool_calls_audit", []) + [entry]}
 
 
 def outputguardrail_fn(state):
