@@ -9,10 +9,10 @@ from forja_agent.graph.nodes import (
     toolaudit_fn,
     toolgate_fn,
 )
-from forja_agent.tools.pipeline import get_pipeline_status
+from forja_agent.tools.registry import get_all_tools
 
 
-tools = [get_pipeline_status]
+tools = get_all_tools()
 
 
 def route_after_inputguardrail(state):

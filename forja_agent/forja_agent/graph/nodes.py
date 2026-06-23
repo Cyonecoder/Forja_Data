@@ -5,21 +5,19 @@ Graph nodes for the Forja Agent LangGraph state machine.
 from langchain_core.messages import AIMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from forja_agent.llm.client import create_supervisor_model
+from forja_agent.config.settings import get_settings
 from forja_agent.prompts.system_prompt import SYSTEM_PROMPT
-from forja_agent.tools.pipeline import get_pipeline_status
-
-# Le modèle est créé une fois et bindé avec les outils 
-SUPERVISOR_MODEL = None
-all_tools = [get_pipeline_status]
+from forja_agent.tools.registry import get_all_tools
 
 
 def get_supervisor_model():
-    """Lazy init du modèle supervisor avec tools bindés."""
-    global SUPERVISOR_MODEL
-    if SUPERVISOR_MODEL is None:
-        base_model = create_supervisor_model()
-        SUPERVISOR_MODEL = base_model.bind_tools(all_tools)
-    return SUPERVISOR_MODEL
+    """Construit le modèle supervisor (local LLM) bindé avec les tools.
+
+    Factory patchable : les tests remplacent
+    ``forja_agent.graph.nodes.get_supervisor_model`` pour éviter tout appel
+    réseau. Aucun modèle réel n'est construit à l'import.
+    """
+    return create_supervisor_model(get_settings()).bind_tools(get_all_tools())
 
 
 def inputguardrail_fn(state):
