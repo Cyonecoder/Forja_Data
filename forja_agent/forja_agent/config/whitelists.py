@@ -64,50 +64,59 @@ FORJA_KAFKA_SECURITY_PROTOCOL_WHITELIST = [
 ]
 
 # ========== CONTAINER WHITELIST ==========
+# EXACT container_name values from docker-compose.yml and
+# docker-compose.airflow.yml. The pipeline health checker inspects ONLY these
+# names and never enumerates arbitrary host containers.
 FORJA_CONTAINER_WHITELIST = [
-    "forjazookeeper",
-    "forjakafka",
-    "forjaschemaregistry",
-    "forjakafkaui",
-    "forjapostgres",
-    "forjaminio",
-    "forjasparkmaster",
-    "forjasparkworker",
-    "forjasparkworkersilver",
-    "forjabronzeconsumer",
+    # docker-compose.yml
+    "forja_zookeeper",
+    "forja_kafka",
+    "forja_schema_registry",
+    "forja_kafka_ui",
+    "forja_postgres",
+    "forja_minio",
+    "forja_spark_master",
     "ga4-producer",
-    "forjaairflowwebserver",
-    "forjaairflowscheduler",
-    "forjagrafana",
-    "forja-agent",
-    "ollama",
-    "vllm",
+    "forja_spark_worker_silver",
+    "forja_bronze_consumer",
+    # docker-compose.airflow.yml
+    "forja_airflow_webserver",
+    "forja_airflow_scheduler",
 ]
 
+# Containers whose failure takes the whole pipeline "down" (vs. "degraded").
+# Kafka is the ingestion backbone and depends on Zookeeper. The gold/analytics
+# Postgres is EXTERNAL (snrt_stats), so the local forja_postgres container is
+# NOT marked critical here; Postgres health is covered by _check_postgres.
+CRITICAL_CONTAINERS = {
+    "forja_kafka",
+    "forja_zookeeper",
+}
+
 # ========== KAFKA TOPIC WHITELIST ==========
-FORJA_KAFKA_TOPIC_WHITELIST = [
+# Real topics seeded from root .env.example (KAFKA_TOPIC_GA4 / KAFKA_TOPIC_SNRT)
+# and the SNRT producers. "snrt-contents" is confirmed real (snrt_producer.py
+# + root tests/test_pipeline.py::test_kafka_topics). The health checker inspects
+# ONLY these topics.
+KAFKA_TOPIC_WHITELIST = [
     "ga4.events",
-    "ga4.raw",
-    "snrt.watchings",
-    "bronze.ga4",
-    "bronze.snrt",
-    "silver.sessions",
-    "silver.users",
-    "silver.programs",
+    "snrt.actions",
+    "snrt-contents",
 ]
 
 # ========== GOLD TABLE WHITELIST ==========
-# Tables Gold autorisées pour les requêtes
-FORJA_GOLD_TABLE_WHITELIST = [
-    "gold_daily_users_v2",
-    "gold_weekly_retention",
-    "gold_monthly_active_users",
-    "gold_content_performance",
-    "gold_user_segments",
-    "gold_realtime_viewers",
-    "gold_program_ratings",
-    "gold_ad_inventory",
+# Real gold tables exercised by the pipeline tests (root tests/test_pipeline.py).
+# Freshness queries use ONLY these identifiers, never user-supplied names.
+GOLD_TABLE_WHITELIST = [
+    "gold_snrt_content_performance",
+    "gold_ga4_daily_stats",
+    "gold_snrt_engagement",
+    "dim_time",
 ]
+
+# ----- Backwards-compat aliases (older WP code referenced FORJA_* names) -----
+FORJA_KAFKA_TOPIC_WHITELIST = KAFKA_TOPIC_WHITELIST
+FORJA_GOLD_TABLE_WHITELIST = GOLD_TABLE_WHITELIST
 
 # ========== SILVER TABLE WHITELIST ==========
 # Tables Silver autorisées pour les requêtes
