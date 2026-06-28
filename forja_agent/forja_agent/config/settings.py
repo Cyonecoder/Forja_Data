@@ -36,7 +36,19 @@ class Settings(BaseSettings):
     kafka_security_protocol: str = "PLAINTEXT"
     kafka_topic_events: str = "ga4.events"
 
-    # ---- Database ----
+    # ---- Gold / analytics Postgres (READ-ONLY health checks) ----
+    # NOTE: the gold tables live in the external snrt_stats DB used by the
+    # pipeline tests (see root tests/test_pipeline.py), not necessarily a local
+    # container. Override pg_host/pg_password via .env to point at the real DB;
+    # defaults are safe placeholders so settings load without secrets.
+    pg_host: str = "localhost"
+    pg_port: int = 5432
+    pg_db: str = "snrt_stats"
+    pg_user: str = "snrt_readonly"
+    pg_password: str = ""        # from .env, never hardcode a real secret
+    pg_connect_timeout: int = 5
+
+    # ---- Database (legacy local forja DB, unrelated to gold checks) ----
     db_host: str = "localhost"
     db_port: int = 5432
     db_name: str = "forja"
