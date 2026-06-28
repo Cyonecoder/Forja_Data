@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     supervisor_llm_url: str = "http://localhost:11434/v1"
     supervisor_llm_model: str = "qwen3:14b"
     supervisor_llm_api_key: str = "ollama"
+    supervisor_llm_api_key2: str = "gpt-4.0"
 
     judge_llm_url: str = "http://localhost:11434/v1"
     judge_llm_model: str = "qwen3:14b"
@@ -45,7 +46,7 @@ class Settings(BaseSettings):
     pg_port: int = 5432
     pg_db: str = "snrt_stats"
     pg_user: str = "snrt_readonly"
-    pg_password: str = ""        # from .env, never hardcode a real secret
+    pg_password: str = ""  # from .env, never hardcode a real secret
     pg_connect_timeout: int = 5
 
     # ---- Database (legacy local forja DB, unrelated to gold checks) ----
